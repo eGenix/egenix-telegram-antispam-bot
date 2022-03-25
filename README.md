@@ -214,9 +214,7 @@ problem.
 License
 -------
 
-> Written by Marc-Andre Lemburg.
-  Copyright (c) 2022, eGenix.com Software GmbH; info@egenix.com
-  License: MIT
+MIT
 
 Credits / Notices
 -----------------
