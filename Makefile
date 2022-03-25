@@ -30,7 +30,10 @@ create-dist:
 	python3 setup.py sdist bdist_wheel
 
 test-upload:
-	python3 -m twine -r testpypi dist/*$(VERSION)*
+	python3 -m twine upload -r testpypi dist/*$(VERSION)*
+
+prod-upload:
+	python3 -m twine upload -r pypi dist/*$(VERSION)*
 
 ### Run the bot
 

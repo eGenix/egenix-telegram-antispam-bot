@@ -23,6 +23,7 @@ class metadata:
     version=__version__
     description='eGenix Antispam Bot for Telegram'
     long_description=_long_description
+    long_description_content_type = 'text/markdown'
     license='MIT'
     author='eGenix.com Software, Skills and Services GmbH'
     author_email='info@egenix.com'
@@ -36,8 +37,8 @@ class metadata:
         "Framework :: AsyncIO",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "License :: Freely Distributable",
-        "License :: Other/Proprietary License",
+        #"License :: Freely Distributable",
+        #"License :: Other/Proprietary License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
         #"Operating System :: Microsoft :: Windows",
@@ -61,6 +62,10 @@ class metadata:
         "Development Status :: 5 - Production/Stable",
         #"Development Status :: 6 - Mature",
         ]
+    install_requires=[
+        'Pyrogram ~=1.4',
+        'TgCrypto ~=1.2',
+    ]
     python_requires='>=3.9'
     packages=[
         'telegram_antispam_bot',

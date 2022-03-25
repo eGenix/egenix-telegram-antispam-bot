@@ -1,5 +1,5 @@
-eGenix.com Antispam Bot for Telegram
-====================================
+eGenix Antispam Bot for Telegram
+================================
 
 This bot package provides a simple, yet effective way to deal with spam
 signups to [Telegram Messenger](https://telegram.org/) (TG) groups.
@@ -14,7 +14,7 @@ Features
 - Several challenge mechanisms to choose from, more can be added as
   needed
 - Flexible and easy to use configuration
-- Only needs a few MB RAM, so can easily be put into a container or run
+- Only needs a few MB of RAM, so can easily be put into a container or run
   on a Raspberry Pi
 - Can handle quite a bit of load due to the async implementation
 
@@ -198,8 +198,8 @@ Motivation
 ----------
 
 eGenix has long been running a local user group meeting in Düsseldorf
-called [Python Meeting Düsseldorf](https://pyddf.de/) and we have been
-using a Telegram group for group communication.
+called Python Meeting Düsseldorf and we have been using a Telegram group
+for group communication.
 
 In the early days, the group worked well and we only had few spammers
 joining it, which we could well handle manually. More recently, this has
@@ -228,9 +228,10 @@ package.
 Changelog
 ---------
 
-- 0.1.0: Initial release
+- 0.2.0: Initial release on PyPI
+- 0.1.0: Initial release on Github
 
 
-Enjoy,
-*Marc-Andre Lemburg*
+Enjoy, \
+*Marc-André Lemburg* \
 [eGenix.com](https://egenix.com/)
