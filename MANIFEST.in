@@ -1,3 +1,6 @@
+global-exclude *~
+global-exclude *.bak
 include LICENSE
 include README.md
 include Makefile
+graft docker/

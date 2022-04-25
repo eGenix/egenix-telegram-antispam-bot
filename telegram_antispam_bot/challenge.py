@@ -160,3 +160,16 @@ class MathAddChallenge(Challenge):
             f'the result of `{a} + {b}`',
             f'^{str(a + b)}$'
         )
+
+class ListItemChallenge(Challenge):
+
+    """ Figure out Python list indexing as challenge.
+    """
+    def create_challenge(self, message):
+
+        l = random.sample(range(10), k=6)
+        i = random.randint(0, 5)
+        return (
+            f'the result of the Python expression `{l!r}[{i}]`',
+            f'^{str(l[i])}$'
+        )

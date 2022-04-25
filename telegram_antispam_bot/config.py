@@ -88,6 +88,9 @@ CHALLENGE_LENGTH = 4
 # Set of Challenge classes to use for the Bot
 CHALLENGES = _tools.StrFrozenSet(['Challenge'])
 
+# Max. number of failed challenge responses to allow
+MAX_FAILED_CHALLENGES = 3
+
 ### Customization
 
 # Override default values with custom ones from a local module

@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+
+  tgbot:
+    container_name: tgbot
+    restart: always
+    build: config
+    env_file:
+      - config/tgbot_env
+    volumes:
+      - tgbot:/var/lib/tgbot
+    command: python3 -m telegram_antispam_bot
+
+volumes:
+
+  tgbot:
+ 

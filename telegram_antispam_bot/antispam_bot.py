@@ -6,6 +6,7 @@
     Copyright (c) 2022, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
 """
+import encodings
 import os
 import asyncio
 import random
@@ -13,6 +14,7 @@ import time
 import copy
 import pprint
 import logging
+import datetime
 from pyrogram import Client, handlers
 from pyrogram.types import Message
 
@@ -36,6 +38,7 @@ from telegram_antispam_bot.config import (
     API_HASH,
     BOT_TOKEN,
     CHALLENGES,
+    MAX_FAILED_CHALLENGES,
     )
 
 ### Globals
@@ -48,19 +51,56 @@ NotGiven = object()
 
 ### Logging
 
-# Configure logging: use ISO format
-logging.basicConfig(
-    format='%(asctime)s.%(msecs)03d: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
-)
+# Configure logging
 if LOG_FILE != 'stdout':
+    # File logging
     logging.basicConfig(
         filename=LOG_FILE,
+        encoding='utf-8',
+        format='%(asctime)s.%(msecs)03d: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        #level=logging.INFO, # useful for pyrogram debugging
+    )
+else:
+    # stdout logging
+    logging.basicConfig(
+        format='%(asctime)s.%(msecs)03d: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        #level=logging.INFO, # useful for pyrogram debugging
     )
 
 # Log object
 LOG = logging.getLogger('antispambot')
 LOG.setLevel(logging.INFO)
+
+### Helpers
+
+def full_name(member, full_info=False):
+
+    """ Return the full name of the member.
+
+        If full_info is true (default is False), a markdown version is
+        returned, which includes a link to the user account, the
+        username and the ID.
+
+    """
+    # Deal with None entries gracefully
+    first_name = member.first_name or ''
+    last_name = member.last_name or ''
+    if first_name and last_name:
+        name = first_name + ' ' + last_name
+    elif first_name:
+        name = first_name
+    elif last_name:
+        name = last_name
+    else:
+        name = '(missing name)'
+    if not full_info:
+        return name
+    return (
+        f'["{name}" '
+        f'(username={member.username}, id={member.id})]'
+        f'(tg://user?id={member.id})')
 
 ### Bot class
 
@@ -82,6 +122,9 @@ class AntispamBot(Client):
 
     # Challenge classes to use. Set in .__init__(), based on .challenges
     challenge_classes = None
+
+    # Max. number of failed challenge responses to allow
+    max_failed_challenges = MAX_FAILED_CHALLENGES
 
     # Group to use for management messages
     management_group_id = MANAGEMENT_GROUP_ID
@@ -256,6 +299,7 @@ class AntispamBot(Client):
             signup_message.member_banned = False
             signup_message.reminder_sent = False
             signup_message.timer = 0
+            signup_message.failed_challenges = 0
             self.new_members[new_member.id] = signup_message
             await self.send_challenge(signup_message)
 
@@ -317,9 +361,7 @@ class AntispamBot(Client):
         message.timer = time.time()
         await self.log_admin(
             f'Processing application by '
-            f'["{new_member.first_name}" '
-            f'(username={new_member.username}, id={new_member.id})]'
-            f'(tg://user?id={new_member.id})'
+            f'{full_name(new_member, full_info=True)} '
             f' to group "<b>{message.chat.title}</b>"'
             )
 
@@ -336,7 +378,7 @@ class AntispamBot(Client):
             await self.send_message(
                 chat_id,
                 f'Reminder: We are still waiting for an answer from user '
-                f'"{new_member.first_name}".'))
+                f'"{full_name(new_member)}".'))
         message.reminder_sent = True
 
     async def failed_challenge(self, message, reply_to_message):
@@ -350,6 +392,7 @@ class AntispamBot(Client):
             answer.
 
         """
+        message.failed_challenges += 1
         message.conversation.append(
             await self.send_message(
                 message.chat.id,
@@ -389,15 +432,13 @@ class AntispamBot(Client):
         await self.send_message(
             chat_id,
             f'Thank you for answering the welcome question, '
-            f'{new_member.first_name}. '
+            f'{full_name(new_member)}. '
             f'You are now a member of the chat. '
             f'Please introduce yourself to the group in a line or two.')
         self.new_members.pop(new_member.id)
         await self.log_admin(
             f'Accepted application by '
-            f'["{new_member.first_name}" '
-            f'(username={new_member.username}, id={new_member.id})]'
-            f'(tg://user?id={new_member.id})'
+            f'{full_name(new_member, full_info=True)}'
             )
 
     async def reject_application(self, message):
@@ -411,20 +452,21 @@ class AntispamBot(Client):
         message.conversation.append(
             await self.send_message(
                 chat_id,
-                f'User "{new_member.first_name}" failed to answer '
+                f'User "{full_name(new_member)}" failed to answer '
                 f'in time. Bye !'))
+        ban_until = (
+            datetime.datetime.now() +
+            datetime.timedelta(seconds=self.ban_time))
         message.conversation.append(
             await self.ban_chat_member(
-                chat_id, new_member.id, until_date=self.ban_time))
+                chat_id, new_member.id, until_date=int(ban_until.timestamp())))
         message.member_banned = True
         self.new_members.pop(new_member.id)
         await self.log_admin(
             f'Banned '
-            f'["{new_member.first_name}" '
-            f'(username={new_member.username}, id={new_member.id})]'
-            f'(tg://user?id={new_member.id})'
+            f'{full_name(new_member, full_info=True)} '
             f' from group "<b>{message.chat.title}</b>"'
-            f' for {self.ban_time} seconds'
+            f' for {self.ban_time} seconds (until {ban_until})'
             )
         await asyncio.sleep(self.reject_notice_time)
         await self.remove_conversation(message)
@@ -446,7 +488,8 @@ class AntispamBot(Client):
                 # Challenge not yet sent
                 continue
             waiting_time = current_time - message.timer
-            if waiting_time > self.response_timeout:
+            if (waiting_time > self.response_timeout or
+                message.failed_challenges >= self.max_failed_challenges):
                 # Ban member for a while
                 await self.reject_application(message)
             elif (not message.reminder_sent and

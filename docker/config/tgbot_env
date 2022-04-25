@@ -1,0 +1,21 @@
+### Python config
+
+# Workaround for new setuptools
+SETUPTOOLS_USE_DISTUTILS=stdlib
+
+### Bot configuration
+
+# API secrets
+TG_API_ID=123
+TG_API_HASH=123
+TG_BOT_TOKEN=123
+
+# Group ID to use for admin messages
+#TG_MANAGEMENT_GROUP_ID=123
+
+# Session database
+TG_SESSION_NAME=antispambot
+
+# Logging
+#TG_LOG_FILE=antispambot.log
+#TG_DEBUG=1

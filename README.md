@@ -55,6 +55,20 @@ Then install the package, using pip:
 pip3 install telegram_antispam_bot
 ```
 
+### Installation using Docker
+
+If you want to run the bot using Docker, have a look at the `docker/`
+subdir in the source distribution. After configuring the bot in
+`docker/config/tgbot_env` you can then run the bot by running:
+
+```bash
+cd docker/
+docker-compose up
+```
+
+Be sure to check the logs using ``docker-compose tgbot logs`` for any
+errors that may occur.
+
 Configuration
 -------------
 
@@ -163,7 +177,8 @@ How it works
 The bot will recognize new group signups and ask the new users to enter
 a challenge string within a certain time frame. Correctly entering the
 challenge then accepts the new user. Not entering the challenge in time
-results in a ban.
+results in a ban. The same happens, if the user enters too many wrong
+answers.
 
 The bot / user conversation is mostly deleted after either successful or
 failed signup to keep the noise level low.
@@ -192,7 +207,6 @@ FAQ
 
   > Yes, you can set up a TG admin group, make the bot a (regular) member
     and then add the ID of the group as `TG_MANAGEMENT_GROUP_ID`.
-
 
 Motivation
 ----------
@@ -228,6 +242,16 @@ package.
 Changelog
 ---------
 
+- 0.3.0:
+  - Added new challenge ListItemChallenge
+  - Added new config variables MAX_FAILED_CHALLENGES to limit the number of failed
+    challenge responses. Defaults to 3.
+  - Added docker-compose config example to sources
+  - Fixed display of the user name to always show the full name, where available.
+  - Added work-around for pyrogram to not create session files inside
+    the package dir when running the bot in -m mode
+  - Fixed bug to make file logging work
+  - Fixed bug in ban time handling; this now works correctly
 - 0.2.0: Initial release on PyPI
 - 0.1.0: Initial release on Github
 
