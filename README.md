@@ -63,11 +63,12 @@ subdir in the source distribution. After configuring the bot in
 
 ```bash
 cd docker/
-docker-compose up
+docker-compose up -d
 ```
 
 Be sure to check the logs using ``docker-compose tgbot logs`` for any
-errors that may occur.
+errors that may occur. You can also without "-d" (no detach) to see the
+logs written to the console for testing purposes.
 
 Configuration
 -------------
@@ -242,6 +243,9 @@ package.
 Changelog
 ---------
 
+- 0.4.0:
+  - Added new challenge MathMultiplyChallenge
+  - Made the MathAddChallenge and MathMultiplyChallenge a little more difficult
 - 0.3.0:
   - Added new challenge ListItemChallenge
   - Added new config variables MAX_FAILED_CHALLENGES to limit the number of failed

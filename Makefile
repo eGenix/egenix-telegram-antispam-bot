@@ -39,6 +39,7 @@ test-upload:
 prod-upload:
 	python3 -m twine upload dist/*$(VERSION).tar.gz
 	python3 -m twine upload dist/*$(VERSION)-py*.whl
+	cp dist/*$(VERSION).tar.gz ~/projects/archives
 
 ### Run the bot
 

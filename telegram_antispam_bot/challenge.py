@@ -71,7 +71,7 @@ class Challenge:
                 self.challenge_chars,
                 k=self.challenge_length)).upper()
         return (
-            f'`{answer}`', # we format this verbatim to make easier to spot
+            f'`{answer}`', # we format this verbatim to make it easier to spot
             f'(?i)^{answer}$' # case is not important for the answer
         )
 
@@ -144,7 +144,7 @@ class ReverseStringChallenge(Challenge):
             k=self.challenge_length)
         answer = reversed(challenge)
         return (
-            f'the reversed version of `{"".join(challenge)}`',
+            f'the reversed version of the string `{"".join(challenge)}`',
             f'(?i)^{"".join(answer)}$'
         )
 
@@ -157,8 +157,21 @@ class MathAddChallenge(Challenge):
         a = random.randint(1, 100)
         b = random.randint(1, 100)
         return (
-            f'the result of `{a} + {b}`',
-            f'^{str(a + b)}$'
+            f'the result of `{a} + 2 * {b}`',
+            f'^{str(a + 2 * b)}$'
+        )
+
+class MathMultiplyChallenge(Challenge):
+
+    """ Solve a math multiplication as challenge.
+    """
+    def create_challenge(self, message):
+
+        a = random.randint(1, 100)
+        b = random.randint(1, 100)
+        return (
+            f'the result of `{a} * {b} + 2`',
+            f'^{str(a * b + 2)}$'
         )
 
 class ListItemChallenge(Challenge):
