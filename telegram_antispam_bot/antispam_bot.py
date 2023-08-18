@@ -21,6 +21,7 @@ from pyrogram.types import Message
 from telegram_antispam_bot import challenge
 
 # Load configuration
+from telegram_antispam_bot import __version__
 from telegram_antispam_bot.config import (
     DEBUG,
     LOG_FILE,
@@ -34,6 +35,7 @@ from telegram_antispam_bot.config import (
     REMINDER_TIME,
     BAN_TIME,
     REJECT_NOTICE_TIME,
+    MUTE_BOT_MESSAGES,
     API_ID,
     API_HASH,
     BOT_TOKEN,
@@ -102,6 +104,13 @@ def full_name(member, full_info=False):
         f'(username={member.username}, id={member.id})]'
         f'(tg://user?id={member.id})')
 
+def message_timestamp(message):
+
+    """ Return the message timestamp in local time.
+
+    """
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(message.date))
+
 ### Bot class
 
 class AntispamBot(Client):
@@ -150,6 +159,9 @@ class AntispamBot(Client):
 
     # Time to show the rejection notice
     reject_notice_time = REJECT_NOTICE_TIME
+
+    # Mute bot messages ?
+    mute_bot_messages = MUTE_BOT_MESSAGES
 
     ### Event loop
 
@@ -217,7 +229,9 @@ class AntispamBot(Client):
         self.add_handler(
             handlers.MessageHandler(self.all_messages))
 
-        await self.log_admin(f'Started Antispam Bot "<b>{me.username}</b>"')
+        await self.log_admin(f'Started Antispam Bot "<b>{me.username}</b>" version {__version__}')
+        if self.mute_bot_messages:
+            self.log(f'Bot messages will be muted.')
 
     async def idle_loop(self):
         while self.keep_running:
@@ -378,7 +392,8 @@ class AntispamBot(Client):
             await self.send_message(
                 chat_id,
                 f'Reminder: We are still waiting for an answer from user '
-                f'"{full_name(new_member)}".'))
+                f'"{full_name(new_member)}".',
+                disable_notification=self.mute_bot_messages))
         message.reminder_sent = True
 
     async def failed_challenge(self, message, reply_to_message):
@@ -398,7 +413,21 @@ class AntispamBot(Client):
                 message.chat.id,
                 f'I am sorry, but this answer is not correct. '
                 f'Please try again.',
-                reply_to_message_id=reply_to_message.message_id))
+                reply_to_message_id=reply_to_message.message_id,
+                disable_notification=self.mute_bot_messages))
+
+    def log_conversation(self, message, title='', indent=2):
+
+        self.log(title)
+        for message in message.conversation:
+            # Note: some entries in the .conversation may be simple
+            # booleans in case messages could not be sent and messages
+            # may not always have a text, so we skip those
+            if not isinstance(message, Message) or not message.text:
+                continue
+            timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(message.date))
+            self.log(f'{" " * indent}{message_timestamp(message)} '
+                     f'"{full_name(message.from_user)}": "{message.text}"')
 
     async def remove_conversation(self, message):
 
@@ -406,6 +435,7 @@ class AntispamBot(Client):
 
             message needs to point to the user's signup message.
         """
+        self.log_conversation(message, 'Removing the following conversation:', indent=2)
         # Note: some entries in the .conversation may be simple booleans
         # in case messages could not be sent, so we skip those
         message_ids = [
@@ -433,8 +463,9 @@ class AntispamBot(Client):
             chat_id,
             f'Thank you for answering the welcome question, '
             f'{full_name(new_member)}. '
-            f'You are now a member of the chat. '
-            f'Please introduce yourself to the group in a line or two.')
+            f'You are now a member of the chat.\n\n'
+            f'<b>Please introduce yourself to the group in a line or two.</b>',
+            disable_notification=self.mute_bot_messages)
         self.new_members.pop(new_member.id)
         await self.log_admin(
             f'Accepted application by '
@@ -453,7 +484,8 @@ class AntispamBot(Client):
             await self.send_message(
                 chat_id,
                 f'User "{full_name(new_member)}" failed to answer '
-                f'in time. Bye !'))
+                f'in time. Bye !',
+                disable_notification=self.mute_bot_messages))
         ban_until = (
             datetime.datetime.now() +
             datetime.timedelta(seconds=self.ban_time))
@@ -464,7 +496,7 @@ class AntispamBot(Client):
         self.new_members.pop(new_member.id)
         await self.log_admin(
             f'Banned '
-            f'{full_name(new_member, full_info=True)} '
+            f'"{full_name(new_member, full_info=True)}" '
             f' from group "<b>{message.chat.title}</b>"'
             f' for {self.ban_time} seconds (until {ban_until})'
             )

@@ -48,6 +48,12 @@ BAN_TIME = 3600 # one hour
 # Time to show the rejection notice
 REJECT_NOTICE_TIME = 10
 
+# Mute bot messages in Telegram ?  Enabling this will cause Telegram to not
+# create notifications for messages sent by the bot.  The messages sent by
+# the user signing up to the group can still cause notifications, if enabled
+# for ths group.
+MUTE_BOT_MESSAGES = True
+
 # Debug level
 DEBUG = 0
 
