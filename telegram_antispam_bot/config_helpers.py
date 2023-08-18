@@ -16,6 +16,12 @@ class IntFrozenSet(set):
     """
     pass
 
+class FloatFrozenSet(set):
+
+    """ Frozen set with float values
+    """
+    pass
+
 class StrFrozenSet(set):
 
     """ Frozen set with str values
@@ -51,6 +57,7 @@ def os_env_override(vars, prefix=''):
         to parse the os.environ values.
 
         Supported types are:
+        - bool
         - int
         - float
         - IntSet
@@ -66,7 +73,11 @@ def os_env_override(vars, prefix=''):
         env_name = prefix + name
         if env_name in os.environ:
             new_value = os.environ[env_name]
-            if isinstance(value, int):
+            if isinstance(value, bool):
+                new_value = True if new_value.lower() in (
+                    '1', 'yes', 'true') else False
+                new_value = bool(new_value)
+            elif isinstance(value, int):
                 new_value = int(new_value)
             elif isinstance(value, float):
                 new_value = float(new_value)
@@ -74,6 +85,8 @@ def os_env_override(vars, prefix=''):
                 new_value = comma_separated_to_frozenset(new_value, int)
             elif isinstance(value, StrFrozenSet):
                 new_value = comma_separated_to_frozenset(new_value, str)
+            elif isinstance(value, FloatFrozenSet):
+                new_value = comma_separated_to_frozenset(new_value, float)
             elif isinstance(value, frozenset):
                 new_value = comma_separated_to_frozenset(new_value)
             vars[name] = new_value
@@ -81,10 +94,34 @@ def os_env_override(vars, prefix=''):
 ### Tests
 
 def _tests():
-    assert comma_separated_to_set('1,2,3') == set(('1','2','3'))
-    assert comma_separated_to_set('1,2,3', int) == set((1,2,3))
-    assert comma_separated_to_set('1,2,3', int) == IntSet((1,2,3))
-    assert comma_separated_to_set('1.3, 2.4, 3.5', float) == set((1.3, 2.4, 3.5))
+
+    vars = dict(
+        INT = 10,
+        FLOAT = 2.34,
+        BOOL_10 = False,
+        BOOL_YES = False,
+        BOOL_TRUE = False,
+    )
+    os.environ.update(dict(
+        INT = '1',
+        FLOAT = '1.23',
+        BOOL_10 = '1',
+        BOOL_YES = 'Yes',
+        BOOL_TRUE = 'True',
+    ))
+    test_vars = vars.copy()
+    os_env_override(test_vars)
+    assert test_vars['INT'] == 1
+    assert test_vars['FLOAT'] == 1.23
+    assert test_vars['BOOL_10'] == True
+    assert test_vars['BOOL_YES'] == True
+    assert test_vars['BOOL_TRUE'] == True
+
+    assert comma_separated_to_frozenset('1,2,3') == set(('1','2','3'))
+    assert comma_separated_to_frozenset('1,2,3', int) == set((1,2,3))
+    assert comma_separated_to_frozenset('1,2,3', int) == IntFrozenSet((1,2,3))
+    assert comma_separated_to_frozenset('1.3, 2.4, 3.5', float) == set((1.3, 2.4, 3.5))
+    assert comma_separated_to_frozenset('1.3, 2.4, 3.5', float) == FloatFrozenSet((1.3, 2.4, 3.5))
 
 if __name__ == '__main__':
     _tests()
