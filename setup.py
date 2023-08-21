@@ -29,7 +29,11 @@ class metadata:
     author_email='info@egenix.com'
     maintainer='eGenix.com Software, Skills and Services GmbH'
     maintainer_email='info@egenix.com'
-    url='https://github.com/egenix/egenix-telegram-antispam-bot'
+    url='https://www.egenix.com/library/telegram-antispam-bot/'
+    project_urls={
+        'Source': 'https://github.com/egenix/egenix-telegram-antispam-bot',
+        'Tracker': 'https://github.com/eGenix/egenix-telegram-antispam-bot/issues',
+    }
     # See https://pypi.org/classifiers/ for possible values:
     classifiers = [
         "Environment :: Console",
