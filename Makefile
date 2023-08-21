@@ -32,6 +32,10 @@ create-dist:	clean
 	echo "Building distributions for version $(VERSION)"
 	python3 setup.py sdist bdist_wheel
 
+tag-release:
+	git tag `python3 -c "from telegram_antispam_bot import __version__; print (f'egenix-telegram-antispam-bot-{__version__}')"`
+	git push origin --tags
+
 test-upload:
 	python3 -m twine upload -r testpypi dist/*$(VERSION).tar.gz
 	python3 -m twine upload -r testpypi dist/*$(VERSION)-py*.whl
@@ -45,3 +49,4 @@ prod-upload:
 
 run:
 	python3 -m telegram_antispam_bot
+
