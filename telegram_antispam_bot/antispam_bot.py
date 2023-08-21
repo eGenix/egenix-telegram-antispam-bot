@@ -35,6 +35,7 @@ from telegram_antispam_bot.config import (
     REMINDER_TIME,
     BAN_TIME,
     REJECT_NOTICE_TIME,
+    APPROVAL_NOTICE_TIME,
     MUTE_BOT_MESSAGES,
     API_ID,
     API_HASH,
@@ -159,6 +160,9 @@ class AntispamBot(Client):
 
     # Time to show the rejection notice
     reject_notice_time = REJECT_NOTICE_TIME
+
+    # Time to show the approval notice. Set to 0 to not remove this.
+    approval_notice_time = APPROVAL_NOTICE_TIME
 
     # Mute bot messages ?
     mute_bot_messages = MUTE_BOT_MESSAGES
@@ -458,14 +462,21 @@ class AntispamBot(Client):
         """
         chat_id = message.chat.id
         new_member = message.new_member
-        await self.remove_conversation(message)
-        await self.send_message(
+        approval_message = await self.send_message(
             chat_id,
             f'Thank you for answering the welcome question, '
             f'{full_name(new_member)}. '
             f'You are now a member of the chat.\n\n'
-            f'<b>Please introduce yourself to the group in a line or two.</b>',
+            f'<i>Please introduce yourself to the group in a line or two.</i>',
             disable_notification=self.mute_bot_messages)
+        if self.approval_notice_time:
+            # Wait and then remove the approval message as well
+            message.conversation.append(approval_message)
+            await asyncio.sleep(self.approval_notice_time)
+        else:
+            # Keep the approval message in the chat
+            pass
+        await self.remove_conversation(message)
         self.new_members.pop(new_member.id)
         await self.log_admin(
             f'Accepted application by '

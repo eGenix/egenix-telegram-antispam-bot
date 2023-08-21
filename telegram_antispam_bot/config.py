@@ -45,8 +45,12 @@ REMINDER_TIME = 60
 # Ban time in seconds. Set to 0 to make bans permanent.
 BAN_TIME = 3600 # one hour
 
-# Time to show the rejection notice
+# Time to show the rejection notice in seconds
 REJECT_NOTICE_TIME = 10
+
+# Time to show the approval notice in seconds. Set to 0 to not remove
+# the approval message
+APPROVAL_NOTICE_TIME = 0
 
 # Mute bot messages in Telegram ?  Enabling this will cause Telegram to not
 # create notifications for messages sent by the bot.  The messages sent by
