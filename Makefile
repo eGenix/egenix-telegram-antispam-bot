@@ -2,6 +2,7 @@ all:
 	echo "Please check the Makefile for available targets"
 
 VERSION := $(shell python3 -c "import setup; print(setup.metadata.version)")
+TAG := 'egenix-telegram-antispam-bot-$(shell python3 -c "import setup; print(setup.metadata.version)")'
 
 ### Prepare the virtual env
 
@@ -33,7 +34,7 @@ create-dist:	clean
 	python3 setup.py sdist bdist_wheel
 
 tag-release:
-	git tag `python3 -c "from telegram_antispam_bot import __version__; print (f'egenix-telegram-antispam-bot-{__version__}')"`
+	git tag -a $(TAG) -m "Release $(VERSION)"
 	git push origin --tags
 
 test-upload:
