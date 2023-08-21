@@ -1,13 +1,11 @@
-eGenix Antispam Bot for Telegram
-================================
+# eGenix Antispam Bot for Telegram
 
 This bot package provides a simple, yet effective way to deal with spam
 signups to [Telegram Messenger](https://telegram.org/) (TG) groups.
 Unfortunately, these have grown to a level that is not manually
 manageable anymore (see [Motivation](#motivation) below for details).
 
-Features
---------
+## Features
 
 - Low impact mode of operation: the bot tries to keep noise in the group
   to a minimum
@@ -18,16 +16,14 @@ Features
   on a Raspberry Pi
 - Can handle quite a bit of load due to the async implementation
 
-Requirements
-------------
+## Requirements
 
 - Python 3.9+
 - [pyrogram](https://github.com/pyrogram/pyrogram) package (see
   requirements.txt)
 - only tested on Linux
 
-Preparation
------------
+## Preparation
 
 In order to run the bot and connect it to your TG group(s), you will
 first have to get API tokens from TG. Please see
@@ -42,14 +38,15 @@ with the TG BotFather. See
 https://core.telegram.org/bots#3-how-do-i-create-a-bot for details. The
 BotFather will send you a Bot token.
 
-Installation
-------------
+## Installation
 
 It is best to install the bot inside a
 [venv](https://docs.python.org/3/library/venv.html). You can use the
 virtual env tool of your choice to set this up.
 
-Then install the package, using pip:
+Then install the [PyPI
+package](https://www.egenix.com/library/telegram-antispam-bot/), using
+pip:
 
 ```bash
 pip3 install telegram_antispam_bot
@@ -70,8 +67,7 @@ Be sure to check the logs using ``docker-compose tgbot logs`` for any
 errors that may occur. You can also without "-d" (no detach) to see the
 logs written to the console for testing purposes.
 
-Configuration
--------------
+## Configuration
 
 The simplest way to configure the bot is via OS environment variables
 (env vars), but you can also put the configuration into a Python module
@@ -138,11 +134,10 @@ group ID to use is 1234.
 It is usually best to configure the extra settings after getting the
 initial setup up and running.
 
-For more details regarding the configuration and more settings, please
-have a look at the `telegram_antispam_bot/config.py` file.
+For more details regarding the configuration and additional settings,
+please have a look at the `telegram_antispam_bot/config.py` file.
 
-Running the Bot
----------------
+## Running the Bot
 
 You can run the bot inside a container, as a service on a root server or
 VM, or manually from the command line.
@@ -154,15 +149,13 @@ need to do is run the package:
 python3 -m telegram_antispam_bot
 ```
 
-Adding the Bot to a TG Group
-----------------------------
+## Adding the Bot to a TG Group
 
 In order for the bot to work on a group, you will have to add it as an
 admin to the group. It needs the permissions *Delete messages* and *Ban
 users*. The other permissions can be disabled.
 
-Bot commands
-------------
+## Bot commands
 
 Unlike other TG bots, this bot does not implement any bot commands (e.g.
 there is no '/help').
@@ -172,8 +165,7 @@ group members trying to interact with the bot, even though they don't
 have permission to do anything. This usually creates enough noise to
 make the bot operation less useful.
 
-How it works
-------------
+## How it works
 
 The bot will recognize new group signups and ask the new users to enter
 a challenge string within a certain time frame. Correctly entering the
@@ -184,8 +176,7 @@ answers.
 The bot / user conversation is mostly deleted after either successful or
 failed signup to keep the noise level low.
 
-FAQ
----
+## FAQ
 
 - I see connection error messages in the logs. Are those something to worry about ?
 
@@ -209,8 +200,7 @@ FAQ
   > Yes, you can set up a TG admin group, make the bot a (regular) member
     and then add the ID of the group as `TG_MANAGEMENT_GROUP_ID`.
 
-Motivation
-----------
+## Motivation
 
 eGenix has long been running a local user group meeting in Düsseldorf
 called Python Meeting Düsseldorf and we have been using a Telegram group
@@ -226,13 +216,16 @@ descriptions, etc.
 With the bot, we now have a more flexible way of dealing with the
 problem.
 
-License
--------
+## License
 
 MIT
 
-Credits / Notices
------------------
+## Contributions
+
+We welcome contributions and will integrate them after review via the
+usual PR process, provided they are MIT licensed as well.
+
+## Credits / Notices
 
 - Thanks go out to [Dan](https://github.com/delivrance) for creating the
 wonderful [pyrogram](https://github.com/pyrogram/pyrogram) async TG
@@ -240,18 +233,37 @@ package.
 
 - "Telegram" is a trademark of Telegram LLC.
 
-Changelog
----------
+## Resources
 
+- [eGenix Antispam Bot for Telegram home page](https://www.egenix.com/library/telegram-antispam-bot/)
+- [eGenix Antispam Bot for Telegram on Github](https://github.com/egenix/egenix-telegram-antispam-bot)
+- [pyrogram](https://github.com/pyrogram/pyrogram), the TG library used
+  by this bot
+
+## Changelog
+
+- 0.5.0:
+  - Output version number when starting up the bot
+  - Add more PyPI project links
+  - Upgraded TgCrypto
+  - Added support for muting the bot messages and enabled this per
+    default; thanks to Alexander Ananchenko for bringing up that idea
+  - Added support for also removing the approval message after a timeout
+    (not enabled per default);  thanks to Alexander Ananchenko for that
+    idea
+  - Bot conversations are now logged before removing them; this makes it
+    easier to debug challenges (some may be too easy)
 - 0.4.0:
   - Added new challenge MathMultiplyChallenge
-  - Made the MathAddChallenge and MathMultiplyChallenge a little more difficult
+  - Made the MathAddChallenge and MathMultiplyChallenge a little more
+    difficult
 - 0.3.0:
   - Added new challenge ListItemChallenge
-  - Added new config variables MAX_FAILED_CHALLENGES to limit the number of failed
-    challenge responses. Defaults to 3.
+  - Added new config variables MAX_FAILED_CHALLENGES to limit the number
+    of failed challenge responses. Defaults to 3.
   - Added docker-compose config example to sources
-  - Fixed display of the user name to always show the full name, where available.
+  - Fixed display of the user name to always show the full name, where
+    available.
   - Added work-around for pyrogram to not create session files inside
     the package dir when running the bot in -m mode
   - Fixed bug to make file logging work
