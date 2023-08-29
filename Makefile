@@ -2,7 +2,7 @@ all:
 	echo "Please check the Makefile for available targets"
 
 VERSION := $(shell python3 -c "import setup; print(setup.metadata.version)")
-TAG := 'egenix-telegram-antispam-bot-$(shell python3 -c "import setup; print(setup.metadata.version)")'
+TAG := 'egenix-telegram-antispam-bot-$(VERSION)'
 
 ### Prepare the virtual env
 
