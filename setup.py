@@ -9,7 +9,6 @@
     License: MIT
 """
 import sys
-import types
 from setuptools import setup
 from telegram_antispam_bot import __version__
 
@@ -19,18 +18,18 @@ with open('README.md', encoding='utf-8') as f:
 
 # Prepare meta data
 class metadata:
-    name='egenix-telegram-antispam-bot'
-    version=__version__
-    description='eGenix Antispam Bot for Telegram'
-    long_description=_long_description
+    name = 'egenix-telegram-antispam-bot'
+    version = __version__
+    description = 'eGenix Antispam Bot for Telegram'
+    long_description = _long_description
     long_description_content_type = 'text/markdown'
-    license='MIT'
-    author='eGenix.com Software, Skills and Services GmbH'
-    author_email='info@egenix.com'
-    maintainer='eGenix.com Software, Skills and Services GmbH'
-    maintainer_email='info@egenix.com'
-    url='https://www.egenix.com/library/telegram-antispam-bot/'
-    project_urls={
+    license = 'MIT'
+    author = 'eGenix.com Software, Skills and Services GmbH'
+    author_email = 'info@egenix.com'
+    maintainer = 'eGenix.com Software, Skills and Services GmbH'
+    maintainer_email = 'info@egenix.com'
+    url = 'https://www.egenix.com/library/telegram-antispam-bot/'
+    project_urls = {
         'Source': 'https://github.com/egenix/egenix-telegram-antispam-bot',
         'Tracker': 'https://github.com/eGenix/egenix-telegram-antispam-bot/issues',
     }
@@ -66,15 +65,15 @@ class metadata:
         "Development Status :: 5 - Production/Stable",
         #"Development Status :: 6 - Mature",
         ]
-    install_requires=[
+    install_requires = [
         'Pyrogram ~=1.4',
         'TgCrypto ~=1.2',
     ]
-    python_requires='>=3.9'
-    packages=[
+    python_requires = '>=3.9'
+    packages = [
         'telegram_antispam_bot',
     ]
-    package_data={
+    package_data = {
         'telegram_antispam_bot': ['README.md', 'LICENSE'],
     }
       
