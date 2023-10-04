@@ -6,7 +6,6 @@
     Copyright (c) 2022, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
 """
-import encodings
 import os
 import asyncio
 import random
@@ -30,7 +29,6 @@ from telegram_antispam_bot.config import (
     SESSION_DATABASE_MODE,
     MANAGEMENT_GROUP_ID,
     MODERATION_GROUP_IDS,
-    IDLE_INTERVAL,
     RESPONSE_TIMEOUT,
     REMINDER_TIME,
     BAN_TIME,
@@ -233,7 +231,9 @@ class AntispamBot(Client):
         self.add_handler(
             handlers.MessageHandler(self.all_messages))
 
-        await self.log_admin(f'Started Antispam Bot "<b>{me.username}</b>" version {__version__}')
+        await self.log_admin(
+            f'Started Antispam Bot "<b>{me.username}</b>"'
+            f' version {__version__}')
         if self.mute_bot_messages:
             self.log(f'Bot messages will be muted.')
 
@@ -429,7 +429,6 @@ class AntispamBot(Client):
             # may not always have a text, so we skip those
             if not isinstance(message, Message) or not message.text:
                 continue
-            timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(message.date))
             self.log(f'{" " * indent}{message_timestamp(message)} '
                      f'"{full_name(message.from_user)}": "{message.text}"')
 

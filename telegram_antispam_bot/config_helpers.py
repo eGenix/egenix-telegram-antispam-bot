@@ -113,15 +113,16 @@ def _tests():
     os_env_override(test_vars)
     assert test_vars['INT'] == 1
     assert test_vars['FLOAT'] == 1.23
-    assert test_vars['BOOL_10'] == True
-    assert test_vars['BOOL_YES'] == True
-    assert test_vars['BOOL_TRUE'] == True
+    assert test_vars['BOOL_10'] is True
+    assert test_vars['BOOL_YES'] is True
+    assert test_vars['BOOL_TRUE'] is True
 
     assert comma_separated_to_frozenset('1,2,3') == set(('1','2','3'))
     assert comma_separated_to_frozenset('1,2,3', int) == set((1,2,3))
     assert comma_separated_to_frozenset('1,2,3', int) == IntFrozenSet((1,2,3))
     assert comma_separated_to_frozenset('1.3, 2.4, 3.5', float) == set((1.3, 2.4, 3.5))
-    assert comma_separated_to_frozenset('1.3, 2.4, 3.5', float) == FloatFrozenSet((1.3, 2.4, 3.5))
+    assert (comma_separated_to_frozenset('1.3, 2.4, 3.5', float) == 
+            FloatFrozenSet((1.3, 2.4, 3.5)))
 
 if __name__ == '__main__':
     _tests()
