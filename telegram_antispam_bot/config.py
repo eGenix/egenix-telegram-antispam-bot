@@ -93,7 +93,7 @@ BOT_TOKEN = '123'
 CHALLENGE_CHARS = 'abcdefghjklmnpqrstuvwxyz23456789'
 
 # Length of challenge strings
-CHALLENGE_LENGTH = 4
+CHALLENGE_LENGTH = 8
 
 # Set of Challenge classes to use for the Bot
 CHALLENGES = _tools.StrFrozenSet(['Challenge'])

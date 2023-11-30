@@ -156,9 +156,10 @@ class MathAddChallenge(Challenge):
 
         a = random.randint(1, 100)
         b = random.randint(1, 100)
+        c = random.randint(1, 10)
         return (
-            f'the result of `{a} + 2 * {b}`',
-            f'^{str(a + 2 * b)}$'
+            f'the result of `{a} + {c} * {b}`',
+            f'^{str(a + c * b)}$'
         )
 
 class MathMultiplyChallenge(Challenge):
@@ -169,9 +170,10 @@ class MathMultiplyChallenge(Challenge):
 
         a = random.randint(1, 100)
         b = random.randint(1, 100)
+        c = random.randint(1, 10)
         return (
-            f'the result of `{a} * {b} + 2`',
-            f'^{str(a * b + 2)}$'
+            f'the result of `{a} * {b} + {c}`',
+            f'^{str(a * b + c)}$'
         )
 
 class ListItemChallenge(Challenge):
