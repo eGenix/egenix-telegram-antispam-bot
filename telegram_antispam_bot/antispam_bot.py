@@ -14,7 +14,7 @@ import copy
 import pprint
 import logging
 import datetime
-from pyrogram import Client, handlers
+from pyrogram import Client, handlers, errors
 from pyrogram.types import Message
 
 from telegram_antispam_bot import challenge
@@ -242,7 +242,7 @@ class AntispamBot(Client):
             await asyncio.sleep(self.idle_interval)
             if _debug > 1:
                 self.log(f'Running idle checks')
-          # Check new members every now and then
+            # Check new members every now and then
             if self.new_members:
                 await self.check_new_members()
 
@@ -448,7 +448,15 @@ class AntispamBot(Client):
         # Remove the new user message as well, if the user was banned
         if message.member_banned:
             message_ids.insert(0, message.message_id)
-        await self.delete_messages(message.chat.id, message_ids)
+        try:
+            await self.delete_messages(message.chat.id, message_ids)
+        except errors.MessageDeleteForbidden as reason:
+            await self.log_admin(
+                f'Failed to delete the conversation with user '
+                f'{full_name(message.new_member, full_info=True)} '
+                f'in group "<b>{message.chat.title}</b>" '
+                f'Please remove by hand. Reason given by Telegram: <i>{reason}</i>'
+                )
 
     async def welcome_new_member(self, message):
 

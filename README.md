@@ -242,6 +242,9 @@ package.
 
 ## Changelog
 
+- 0.6.0:
+  - Catch weird error from Telegram when deleting conversations; this
+    seems to sometimes fail, probably due to a glitch on their side
 - 0.5.0:
   - Output version number when starting up the bot
   - Add more PyPI project links
