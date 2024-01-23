@@ -1,7 +1,7 @@
 ### Python config
 
 # Workaround for new setuptools
-SETUPTOOLS_USE_DISTUTILS=stdlib
+#SETUPTOOLS_USE_DISTUTILS=stdlib
 
 ### Bot configuration
 
