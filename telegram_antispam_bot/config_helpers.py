@@ -2,8 +2,8 @@
 
 """ Python config module helpers.
 
-    Written by Marc-Andre Lemburg in 2022.
-    Copyright (c) 2022, eGenix.com Software GmbH; mailto:info@egenix.com
+    Written by Marc-Andre Lemburg.
+    Copyright (c) 2022-2024, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
 """
 import os

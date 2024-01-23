@@ -243,10 +243,14 @@ package.
 ## Changelog
 
 - 0.6.0:
+  - Upgraded to pyrogram 2.0.106, which fixes a weird error we have been
+    getting recently with the old version 1.4.16 (see
+    https://github.com/pyrogram/pyrogram/issues/1347)
   - Catch weird error from Telegram when deleting conversations; this
     seems to sometimes fail, probably due to a glitch on their side
   - Made the math and char entry challenges a little harder
   - Added new DictItemChallenge
+
 - 0.5.0:
   - Output version number when starting up the bot
   - Added more PyPI project links
@@ -258,10 +262,12 @@ package.
     idea
   - Bot conversations are now logged before removing them; this makes it
     easier to debug challenges (some may be too easy)
+
 - 0.4.0:
   - Added new challenge MathMultiplyChallenge
   - Made the MathAddChallenge and MathMultiplyChallenge a little more
     difficult
+
 - 0.3.0:
   - Added new challenge ListItemChallenge
   - Added new config variables MAX_FAILED_CHALLENGES to limit the number
@@ -273,7 +279,9 @@ package.
     the package dir when running the bot in -m mode
   - Fixed bug to make file logging work
   - Fixed bug in ban time handling; this now works correctly
+
 - 0.2.0: Initial release on PyPI
+
 - 0.1.0: Initial release on Github
 
 

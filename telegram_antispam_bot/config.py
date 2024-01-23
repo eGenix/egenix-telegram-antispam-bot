@@ -6,8 +6,8 @@
     "local_config" or by providing OS environment variables of the same
     name with "TG_" prefix, e.g. export TG_SESSION_NAME="mybot".
 
-    Written by Marc-Andre Lemburg in 2022.
-    Copyright (c) 2022, eGenix.com Software GmbH; mailto:info@egenix.com
+    Written by Marc-Andre Lemburg.
+    Copyright (c) 2022-2024, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
  """
 import telegram_antispam_bot.config_helpers as _tools

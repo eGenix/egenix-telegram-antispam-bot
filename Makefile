@@ -21,6 +21,9 @@ dev-packages:   packages
 update-packages:
 	pip install -U -r requirements-base.txt
 
+freeze-packages:
+	pip freeze > requirements.txt
+
 ### Build
 
 clean:

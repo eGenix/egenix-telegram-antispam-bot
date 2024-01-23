@@ -4,8 +4,8 @@
 
     Package configuration file.
 
-    Written by Marc-Andre Lemburg in 2022.
-    Copyright (c) 2022, eGenix.com Software GmbH; mailto:info@egenix.com
+    Written by Marc-Andre Lemburg.
+    Copyright (c) 2022-2024, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
 """
 import sys
@@ -66,7 +66,7 @@ class metadata:
         #"Development Status :: 6 - Mature",
         ]
     install_requires = [
-        'Pyrogram ~=1.4',
+        'Pyrogram ~=2.0',
         'TgCrypto ~=1.2',
     ]
     python_requires = '>=3.9'

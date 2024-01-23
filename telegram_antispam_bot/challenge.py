@@ -2,8 +2,8 @@
 
 """ eGenix Antispam Bot for Telegram Challenges
 
-    Written by Marc-Andre Lemburg in 2022.
-    Copyright (c) 2022, eGenix.com Software GmbH; mailto:info@egenix.com
+    Written by Marc-Andre Lemburg.
+    Copyright (c) 2022-2024, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
 """
 import random
@@ -94,7 +94,7 @@ class Challenge:
                 f'Please enter {challenge} into this chat '
                 f'to get approved as a member '
                 f'(within the next few seconds).',
-                reply_to_message_id=message.message_id))
+                reply_to_message_id=message.id))
 
     def check(self, answer):
 

@@ -2,8 +2,8 @@
 
 """ eGenix Antispam Bot for Telegram
 
-    Written by Marc-Andre Lemburg in 2022.
-    Copyright (c) 2022, eGenix.com Software GmbH; mailto:info@egenix.com
+    Written by Marc-Andre Lemburg.
+    Copyright (c) 2022-2024, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
 """
 import os
@@ -108,7 +108,7 @@ def message_timestamp(message):
     """ Return the message timestamp in local time.
 
     """
-    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(message.date))
+    return message.date.strftime('%Y-%m-%d %H:%M:%S')
 
 ### Bot class
 
@@ -417,7 +417,7 @@ class AntispamBot(Client):
                 message.chat.id,
                 f'I am sorry, but this answer is not correct. '
                 f'Please try again.',
-                reply_to_message_id=reply_to_message.message_id,
+                reply_to_message_id=reply_to_message.id,
                 disable_notification=self.mute_bot_messages))
 
     def log_conversation(self, message, title='', indent=2):
@@ -442,12 +442,12 @@ class AntispamBot(Client):
         # Note: some entries in the .conversation may be simple booleans
         # in case messages could not be sent, so we skip those
         message_ids = [
-            message.message_id
+            message.id
             for message in message.conversation
             if isinstance(message, Message)]
         # Remove the new user message as well, if the user was banned
         if message.member_banned:
-            message_ids.insert(0, message.message_id)
+            message_ids.insert(0, message.id)
         try:
             await self.delete_messages(message.chat.id, message_ids)
         except errors.MessageDeleteForbidden as reason:
@@ -509,7 +509,7 @@ class AntispamBot(Client):
             datetime.timedelta(seconds=self.ban_time))
         message.conversation.append(
             await self.ban_chat_member(
-                chat_id, new_member.id, until_date=int(ban_until.timestamp())))
+                chat_id, new_member.id, until_date=ban_until))
         message.member_banned = True
         self.new_members.pop(new_member.id)
         await self.log_admin(
