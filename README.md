@@ -246,9 +246,10 @@ package.
   - Catch weird error from Telegram when deleting conversations; this
     seems to sometimes fail, probably due to a glitch on their side
   - Made the math and char entry challenges a little harder
+  - Added new DictItemChallenge
 - 0.5.0:
   - Output version number when starting up the bot
-  - Add more PyPI project links
+  - Added more PyPI project links
   - Upgraded TgCrypto
   - Added support for muting the bot messages and enabled this per
     default; thanks to Alexander Ananchenko for bringing up that idea

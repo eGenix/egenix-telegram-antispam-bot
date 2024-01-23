@@ -188,3 +188,22 @@ class ListItemChallenge(Challenge):
             f'the result of the Python expression `{l!r}[{i}]`',
             f'^{str(l[i])}$'
         )
+
+class DictItemChallenge(Challenge):
+
+    """ Figure out Python dict indexing as challenge.
+    """
+    def create_challenge(self, message):
+
+        d = {}
+        for i in range(4):
+            key = random.randint(0, 10)
+            if random.choice((0, 1)) == 0:
+                key = chr(ord('a') + key)
+            value = random.randint(0, 9)
+            d[key] = value
+        i = random.choice(list(d.keys()))
+        return (
+            f'the result of the Python expression `{d!r}[{i!r}]`',
+            f'^{str(d[i])}$'
+        )

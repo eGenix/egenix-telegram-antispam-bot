@@ -95,7 +95,8 @@ CHALLENGE_CHARS = 'abcdefghjklmnpqrstuvwxyz23456789'
 # Length of challenge strings
 CHALLENGE_LENGTH = 8
 
-# Set of Challenge classes to use for the Bot
+# Set of Challenge classes to use for the Bot; see challenge.py for the
+# list of available challenges.
 CHALLENGES = _tools.StrFrozenSet(['Challenge'])
 
 # Max. number of failed challenge responses to allow
