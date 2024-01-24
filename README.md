@@ -45,11 +45,11 @@ It is best to install the bot inside a
 virtual env tool of your choice to set this up.
 
 Then install the [PyPI
-package](https://www.egenix.com/library/telegram-antispam-bot/), using
+package](https://pypi.org/project/egenix-telegram-antispam-bot/), using
 pip:
 
 ```bash
-pip3 install telegram_antispam_bot
+pip install egenix-telegram-antispam-bot
 ```
 
 ### Installation using Docker
