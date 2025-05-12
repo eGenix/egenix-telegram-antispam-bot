@@ -125,6 +125,9 @@ installation:
   subclass names found in `telegram_antispam_bot/challenge.py`. The bot
   will then pick one of these randomly when sending a challenge.
 
+- `TG_MAX_EMOJIS_IN_USER_NAME`: Maximum number of emojis allowed
+  in user names. Default is 2.
+
 Getting the group IDs is not easy from the TG clients, but you can use
 the `TG_DEBUG` setting to find out the IDs. The log will show entries
 such as `chat=pyrogram.types.Chat(id=1234, type='supergroup',
@@ -242,6 +245,14 @@ package.
 
 ## Changelog
 
+- 0:7.1:
+  - Added missing dependency on emoji package to setup
+- 0.7.0:
+  - Added user name check for number of emojis, since these are being
+    used a lot by spammers
+  - Added wheel as requirement, since this is no longer included per
+    default
+  - Updated copyright year
 - 0.6.0:
   - Upgraded to pyrogram 2.0.106, which fixes a weird error we have been
     getting recently with the old version 1.4.16 (see

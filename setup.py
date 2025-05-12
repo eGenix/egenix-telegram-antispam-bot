@@ -5,10 +5,9 @@
     Package configuration file.
 
     Written by Marc-Andre Lemburg.
-    Copyright (c) 2022-2024, eGenix.com Software GmbH; mailto:info@egenix.com
+    Copyright (c) 2022-2025, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
 """
-import sys
 from setuptools import setup
 from telegram_antispam_bot import __version__
 
@@ -61,13 +60,13 @@ class metadata:
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Application Frameworks",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Topic :: Utilities ",
         "Development Status :: 5 - Production/Stable",
         #"Development Status :: 6 - Mature",
         ]
     install_requires = [
         'Pyrogram ~=2.0',
         'TgCrypto ~=1.2',
+        'emoji ~=2.14',
     ]
     python_requires = '>=3.9'
     packages = [
@@ -76,7 +75,7 @@ class metadata:
     package_data = {
         'telegram_antispam_bot': ['README.md', 'LICENSE'],
     }
-      
+
     @classmethod
     def _dict(cls):
         return {

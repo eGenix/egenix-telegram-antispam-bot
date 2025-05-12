@@ -7,7 +7,7 @@
     name with "TG_" prefix, e.g. export TG_SESSION_NAME="mybot".
 
     Written by Marc-Andre Lemburg.
-    Copyright (c) 2022-2024, eGenix.com Software GmbH; mailto:info@egenix.com
+    Copyright (c) 2022-2025, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
  """
 import telegram_antispam_bot.config_helpers as _tools
@@ -57,6 +57,10 @@ APPROVAL_NOTICE_TIME = 0
 # the user signing up to the group can still cause notifications, if enabled
 # for ths group.
 MUTE_BOT_MESSAGES = True
+
+# Max. number of emojis allowed in user name; more will result in an
+# immediate ban
+MAX_EMOJIS_IN_USER_NAME = 2
 
 # Debug level
 DEBUG = 0

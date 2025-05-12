@@ -1,2 +1,4 @@
 Pyrogram >=2.0, <2.1
 TgCrypto
+emoji
+wheel

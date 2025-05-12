@@ -3,7 +3,7 @@
 """ eGenix Antispam Bot for Telegram
 
     Written by Marc-Andre Lemburg.
-    Copyright (c) 2022-2024, eGenix.com Software GmbH; mailto:info@egenix.com
+    Copyright (c) 2022-2025, eGenix.com Software GmbH; mailto:info@egenix.com
     License: MIT
 """
 import os
@@ -14,8 +14,10 @@ import copy
 import pprint
 import logging
 import datetime
+import enum
 from pyrogram import Client, handlers, errors
 from pyrogram.types import Message
+import emoji
 
 from telegram_antispam_bot import challenge
 
@@ -40,6 +42,7 @@ from telegram_antispam_bot.config import (
     BOT_TOKEN,
     CHALLENGES,
     MAX_FAILED_CHALLENGES,
+    MAX_EMOJIS_IN_USER_NAME,
     )
 
 ### Globals
@@ -49,6 +52,11 @@ _debug = DEBUG
 
 # Singleton
 NotGiven = object()
+
+# Rejection reasons
+class Rejection(enum.IntEnum):
+    FAILED_CHALLENGE = 1
+    IMMMEDIATE_BAN = 2
 
 ### Logging
 
@@ -373,14 +381,26 @@ class AntispamBot(Client):
             message needs to point to the user's signup message.
         """
         new_member = message.new_member
+        new_member_name = full_name(new_member, full_info=True)
+        if emoji.emoji_count(new_member_name) > MAX_EMOJIS_IN_USER_NAME:
+            # Ban member right away
+            await self.log_admin(
+                f'Application by '
+                f'{new_member_name} '
+                f'to group "<b>{message.chat.title}</b>" '
+                f'rejected: too many emojis in the name'
+                )
+            await self.reject_application(message,
+                                            reason=Rejection.IMMMEDIATE_BAN)
+            return
         challenge = self.create_challenge(message)
         message.challenge = challenge
         await challenge.send(message)
         message.timer = time.time()
         await self.log_admin(
             f'Processing application by '
-            f'{full_name(new_member, full_info=True)} '
-            f' to group "<b>{message.chat.title}</b>"'
+            f'{new_member_name} '
+            f'to group "<b>{message.chat.title}</b>"'
             )
 
     async def send_reminder(self, message):
@@ -490,19 +510,35 @@ class AntispamBot(Client):
             f'{full_name(new_member, full_info=True)}'
             )
 
-    async def reject_application(self, message):
+    async def reject_application(self, message,
+                                 reason=Rejection.FAILED_CHALLENGE):
 
         """ Reject an application after a failed conversation.
 
             message needs to point to the member's signup message.
+
+            reason can be set to one of the Rejection enums. It defaults
+            to FAILED_CHALLENGE.
+
         """
         chat_id = message.chat.id
         new_member = message.new_member
+        if reason == Rejection.FAILED_CHALLENGE:
+            text = (
+                f'User "{full_name(new_member)}" failed to answer '
+                f'in time. Bye !'
+            )
+        elif reason == Rejection.IMMMEDIATE_BAN:
+            text = (
+                f'User "{full_name(new_member)}" does not meet our '
+                f'group standards. Bye !'
+            )
+        else:
+            raise ValueError('Unknown rejection reason: {reason!r}')
         message.conversation.append(
             await self.send_message(
                 chat_id,
-                f'User "{full_name(new_member)}" failed to answer '
-                f'in time. Bye !',
+                text,
                 disable_notification=self.mute_bot_messages))
         ban_until = (
             datetime.datetime.now() +
@@ -515,8 +551,9 @@ class AntispamBot(Client):
         await self.log_admin(
             f'Banned '
             f'"{full_name(new_member, full_info=True)}" '
-            f' from group "<b>{message.chat.title}</b>"'
-            f' for {self.ban_time} seconds (until {ban_until})'
+            f'from group "<b>{message.chat.title}</b>" '
+            f'for {self.ban_time} seconds (until {ban_until}, '
+            f'reason: {reason!r})'
             )
         await asyncio.sleep(self.reject_notice_time)
         await self.remove_conversation(message)
