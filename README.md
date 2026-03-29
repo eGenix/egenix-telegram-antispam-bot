@@ -128,12 +128,6 @@ installation:
 - `TG_MAX_EMOJIS_IN_USER_NAME`: Maximum number of emojis allowed
   in user names. Default is 2.
 
-- `TG_DISABLE_REACTIONS`: Set to `0` or `false` to disable the automatic
-  reaction suppression during signup dialogs. When enabled (the default),
-  the bot temporarily disables reactions in the group while a signup
-  challenge is running and restores them afterwards. This requires the
-  bot to have the *Change Group Info* admin permission (see below).
-
 Getting the group IDs is not easy from the TG clients, but you can use
 the `TG_DEBUG` setting to find out the IDs. The log will show entries
 such as `chat=pyrogram.types.Chat(id=1234, type='supergroup',
@@ -162,10 +156,7 @@ python3 -m telegram_antispam_bot
 
 In order for the bot to work on a group, you will have to add it as an
 admin to the group. It needs the permissions *Delete messages* and *Ban
-users*. If reaction suppression is enabled (the default), the bot also
-needs the *Change Group Info* permission to temporarily disable and
-restore reactions during signup dialogs. The other permissions can be
-disabled.
+users*. The other permissions can be disabled.
 
 ## Bot commands
 

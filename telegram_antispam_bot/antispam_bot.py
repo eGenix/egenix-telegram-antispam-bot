@@ -17,14 +17,6 @@ import datetime
 import enum
 from pyrogram import Client, handlers, errors
 from pyrogram.types import Message
-from pyrogram.raw.functions.messages import SetChatAvailableReactions
-from pyrogram.raw.types import (
-    ChatReactionsNone,
-    ChatReactionsAll,
-    ChatReactionsSome,
-    ReactionEmoji,
-    ReactionCustomEmoji,
-)
 import emoji
 
 from telegram_antispam_bot import challenge
@@ -51,7 +43,6 @@ from telegram_antispam_bot.config import (
     CHALLENGES,
     MAX_FAILED_CHALLENGES,
     MAX_EMOJIS_IN_USER_NAME,
-    DISABLE_REACTIONS,
     )
 
 ### Globals
@@ -182,9 +173,6 @@ class AntispamBot(Client):
     # Mute bot messages ?
     mute_bot_messages = MUTE_BOT_MESSAGES
 
-    # Disable reactions during signup dialogs ?
-    disable_reactions = DISABLE_REACTIONS
-
     ### Event loop
 
     def __init__(
@@ -246,9 +234,6 @@ class AntispamBot(Client):
 
         # Setup vars
         self.new_members = {}
-        # Maps chat_id -> {'raw_reactions': <raw ChatReactions>, 'count': int}
-        # for groups where reactions have been disabled during signup
-        self.disabled_reactions = {}
 
         # Add catch all handler
         self.add_handler(
@@ -389,105 +374,6 @@ class AntispamBot(Client):
         cls = random.choice(self.challenge_classes)
         return cls(self, message)
 
-    def _chat_reactions_to_raw(self, chat_reactions):
-
-        """ Convert a high-level ChatReactions object to a raw ChatReactions
-            type suitable for SetChatAvailableReactions.
-
-            Returns None if reactions are already disabled (chat_reactions
-            is None).
-        """
-        if chat_reactions is None:
-            return None
-        if chat_reactions.all_are_enabled:
-            return ChatReactionsAll(
-                allow_custom=chat_reactions.allow_custom_emoji)
-        if chat_reactions.reactions:
-            raw_reactions = []
-            for r in chat_reactions.reactions:
-                if r.emoji:
-                    raw_reactions.append(ReactionEmoji(emoticon=r.emoji))
-                elif r.custom_emoji_id:
-                    raw_reactions.append(
-                        ReactionCustomEmoji(document_id=r.custom_emoji_id))
-            return ChatReactionsSome(reactions=raw_reactions)
-        return None
-
-    async def disable_group_reactions(self, chat_id):
-
-        """ Disable reactions for a group during a signup dialog.
-
-            Uses reference counting to handle concurrent signups.
-            Returns True if reactions were disabled (or were already
-            disabled by a previous signup), False if reactions were
-            already disabled in the group settings or on error.
-        """
-        info = self.disabled_reactions.get(chat_id)
-        if info is not None:
-            # Already disabled by a previous signup, just increment
-            info['count'] += 1
-            return True
-        # Get current reactions
-        try:
-            chat = await self.get_chat(chat_id)
-        except Exception as error:
-            self.log(
-                f'WARNING: Could not get chat info for {chat_id}: {error}')
-            return False
-        raw_reactions = self._chat_reactions_to_raw(chat.available_reactions)
-        if raw_reactions is None:
-            # Reactions are already disabled in group settings
-            return False
-        # Save and disable
-        try:
-            peer = await self.resolve_peer(chat_id)
-            await self.invoke(
-                SetChatAvailableReactions(
-                    peer=peer,
-                    available_reactions=ChatReactionsNone()))
-        except Exception as error:
-            self.log(
-                f'WARNING: Could not disable reactions for '
-                f'{chat_id}: {error}')
-            return False
-        self.disabled_reactions[chat_id] = {
-            'raw_reactions': raw_reactions,
-            'count': 1,
-        }
-        if _debug:
-            self.log(f'Disabled reactions for group {chat_id}')
-        return True
-
-    async def restore_group_reactions(self, chat_id):
-
-        """ Restore reactions for a group after a signup dialog ends.
-
-            Only restores when the last concurrent signup for the group
-            has finished.
-        """
-        info = self.disabled_reactions.get(chat_id)
-        if info is None:
-            return
-        info['count'] -= 1
-        if info['count'] > 0:
-            return
-        # Last signup finished, restore reactions
-        raw_reactions = info['raw_reactions']
-        del self.disabled_reactions[chat_id]
-        try:
-            peer = await self.resolve_peer(chat_id)
-            await self.invoke(
-                SetChatAvailableReactions(
-                    peer=peer,
-                    available_reactions=raw_reactions))
-        except Exception as error:
-            await self.log_admin(
-                f'WARNING: Could not restore reactions for '
-                f'group {chat_id}: {error}')
-            return
-        if _debug:
-            self.log(f'Restored reactions for group {chat_id}')
-
     async def send_challenge(self, message):
 
         """ Send a challenge message to the user.
@@ -507,9 +393,6 @@ class AntispamBot(Client):
             await self.reject_application(message,
                                             reason=Rejection.IMMMEDIATE_BAN)
             return
-        message.reactions_disabled = (
-            self.disable_reactions
-            and await self.disable_group_reactions(message.chat.id))
         challenge = self.create_challenge(message)
         message.challenge = challenge
         await challenge.send(message)
@@ -622,8 +505,6 @@ class AntispamBot(Client):
             pass
         await self.remove_conversation(message)
         self.new_members.pop(new_member.id)
-        if message.reactions_disabled:
-            await self.restore_group_reactions(chat_id)
         await self.log_admin(
             f'Accepted application by '
             f'{full_name(new_member, full_info=True)}'
@@ -676,8 +557,6 @@ class AntispamBot(Client):
             )
         await asyncio.sleep(self.reject_notice_time)
         await self.remove_conversation(message)
-        if getattr(message, 'reactions_disabled', False):
-            await self.restore_group_reactions(chat_id)
 
     # Loop processing
 
