@@ -58,6 +58,12 @@ APPROVAL_NOTICE_TIME = 0
 # for ths group.
 MUTE_BOT_MESSAGES = True
 
+# Disable reactions while a signup dialog is running ?  When enabled, the
+# bot will temporarily disable reactions in the group during signup dialogs
+# to prevent abuse, and restore them after the dialog ends.  Requires the
+# bot to have the "Change Group Info" admin permission.
+DISABLE_REACTIONS = True
+
 # Max. number of emojis allowed in user name; more will result in an
 # immediate ban
 MAX_EMOJIS_IN_USER_NAME = 2
