@@ -128,11 +128,6 @@ installation:
 - `TG_MAX_EMOJIS_IN_USER_NAME`: Maximum number of emojis allowed
   in user names. Default is 2.
 
-- `TG_BAN_ON_SIGNUP_REACTION`: Set to `True` (default) to immediately
-  ban new members who send reactions during the signup challenge dialog.
-  The reaction is also reported to Telegram. Set to `False` to disable
-  this feature.
-
 Getting the group IDs is not easy from the TG clients, but you can use
 the `TG_DEBUG` setting to find out the IDs. The log will show entries
 such as `chat=pyrogram.types.Chat(id=1234, type='supergroup',
