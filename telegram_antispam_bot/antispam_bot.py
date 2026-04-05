@@ -15,9 +15,104 @@ import pprint
 import logging
 import datetime
 import enum
-from pyrogram import Client, handlers, errors
+from pyrogram import Client, ContinuePropagation, handlers, errors
 from pyrogram.types import Message
+from pyrogram.raw import functions as raw_functions
+from pyrogram.raw.core.primitives import Int, Long, Vector
+from pyrogram.raw.core import TLObject
 import emoji
+
+### Monkey-patch Pyrogram to support UpdateBotMessageReaction
+#
+# Pyrogram 2.0.106 (layer 158) does not include this update type, which
+# was added in layer 166.  We define it here and register it in the
+# global objects map so that Pyrogram can deserialise these updates.
+
+from io import BytesIO
+from typing import List, Any
+
+class UpdateBotMessageReaction(TLObject):  # type: ignore
+    """Telegram API type (monkey-patched).
+
+    A user has changed their reactions on a message with public reactions.
+
+    Constructor of :obj:`~pyrogram.raw.base.Update`.
+
+    Details:
+        - Layer: ``166``
+        - ID: ``AC21D3CE``
+
+    Parameters:
+        peer (:obj:`Peer <pyrogram.raw.base.Peer>`):
+            Peer of the reacted-to message.
+
+        msg_id (``int`` ``32-bit``):
+            ID of the reacted-to message.
+
+        date (``int`` ``32-bit``):
+            Date of the change.
+
+        actor (:obj:`Peer <pyrogram.raw.base.Peer>`):
+            The user who changed the reactions.
+
+        old_reactions (List of :obj:`Reaction <pyrogram.raw.base.Reaction>`):
+            Previous reactions.
+
+        new_reactions (List of :obj:`Reaction <pyrogram.raw.base.Reaction>`):
+            New reactions.
+
+        qts (``int`` ``32-bit``):
+            Event sequence identifier.
+    """
+
+    __slots__: List[str] = [
+        "peer", "msg_id", "date", "actor",
+        "old_reactions", "new_reactions", "qts",
+    ]
+
+    ID = 0xac21d3ce
+    QUALNAME = "types.UpdateBotMessageReaction"
+
+    def __init__(self, *, peer, msg_id: int, date: int, actor,
+                 old_reactions: list, new_reactions: list,
+                 qts: int) -> None:
+        self.peer = peer
+        self.msg_id = msg_id
+        self.date = date
+        self.actor = actor
+        self.old_reactions = old_reactions
+        self.new_reactions = new_reactions
+        self.qts = qts
+
+    @staticmethod
+    def read(b: BytesIO, *args: Any) -> "UpdateBotMessageReaction":
+        peer = TLObject.read(b)
+        msg_id = Int.read(b)
+        date = Int.read(b)
+        actor = TLObject.read(b)
+        old_reactions = TLObject.read(b)
+        new_reactions = TLObject.read(b)
+        qts = Int.read(b)
+        return UpdateBotMessageReaction(
+            peer=peer, msg_id=msg_id, date=date, actor=actor,
+            old_reactions=old_reactions, new_reactions=new_reactions,
+            qts=qts)
+
+    def write(self, *args) -> bytes:
+        b = BytesIO()
+        b.write(Int(self.ID, False))
+        b.write(self.peer.write())
+        b.write(Int(self.msg_id))
+        b.write(Int(self.date))
+        b.write(self.actor.write())
+        b.write(Vector(self.old_reactions))
+        b.write(Vector(self.new_reactions))
+        b.write(Int(self.qts))
+        return b.getvalue()
+
+# Register the type in Pyrogram's global objects map
+from pyrogram.raw.all import objects as _raw_objects
+_raw_objects[UpdateBotMessageReaction.ID] = UpdateBotMessageReaction
 
 from telegram_antispam_bot import challenge
 
@@ -43,6 +138,7 @@ from telegram_antispam_bot.config import (
     CHALLENGES,
     MAX_FAILED_CHALLENGES,
     MAX_EMOJIS_IN_USER_NAME,
+    BAN_ON_SIGNUP_REACTION,
     )
 
 ### Globals
@@ -57,6 +153,7 @@ NotGiven = object()
 class Rejection(enum.IntEnum):
     FAILED_CHALLENGE = 1
     IMMMEDIATE_BAN = 2
+    REACTION_DURING_SIGNUP = 3
 
 ### Logging
 
@@ -173,6 +270,9 @@ class AntispamBot(Client):
     # Mute bot messages ?
     mute_bot_messages = MUTE_BOT_MESSAGES
 
+    # Ban new members who send reactions during signup ?
+    ban_on_signup_reaction = BAN_ON_SIGNUP_REACTION
+
     ### Event loop
 
     def __init__(
@@ -238,6 +338,11 @@ class AntispamBot(Client):
         # Add catch all handler
         self.add_handler(
             handlers.MessageHandler(self.all_messages))
+
+        # Add raw update handler for reaction monitoring
+        if self.ban_on_signup_reaction:
+            self.add_handler(
+                handlers.RawUpdateHandler(self.raw_update_handler))
 
         await self.log_admin(
             f'Started Antispam Bot "<b>{me.username}</b>"'
@@ -366,6 +471,59 @@ class AntispamBot(Client):
                 # Invalid access
                 return False
         return True
+
+    async def raw_update_handler(self, client, update, users, chats):
+
+        """ Handler for raw updates.
+
+            Used to monitor reaction updates from new members during
+            signup.
+        """
+        if not isinstance(update, UpdateBotMessageReaction):
+            raise ContinuePropagation
+        if _debug:
+            self.log('Reaction update:', update)
+
+        from pyrogram import utils as pyrogram_utils
+
+        # Extract the actor's user ID from the Peer object
+        actor_id = getattr(update.actor, 'user_id', None)
+        if actor_id is None:
+            raise ContinuePropagation
+
+        # Check whether this is a new member currently signing up
+        if actor_id not in self.new_members:
+            raise ContinuePropagation
+
+        # Get the chat ID from the Peer object (convert raw to Pyrogram ID)
+        chat_id = pyrogram_utils.get_peer_id(update.peer)
+
+        # Report the reaction to Telegram
+        try:
+            await self.invoke(
+                raw_functions.messages.ReportReaction(
+                    peer=await self.resolve_peer(chat_id),
+                    id=update.msg_id,
+                    reaction_peer=await self.resolve_peer(actor_id)))
+            self.log(
+                f'Reported reaction by user {actor_id} '
+                f'in group {chat_id} to Telegram')
+        except Exception as error:
+            self.log(
+                f'ERROR: Could not report reaction by user '
+                f'{actor_id} in group {chat_id}: {error}')
+
+        # Ban the new member
+        signup_message = self.new_members[actor_id]
+        await self.log_admin(
+            f'New member '
+            f'{full_name(signup_message.new_member, full_info=True)} '
+            f'sent a reaction during signup in group '
+            f'"<b>{signup_message.chat.title}</b>", '
+            f'banning immediately')
+        await self.reject_application(
+            signup_message,
+            reason=Rejection.REACTION_DURING_SIGNUP)
 
     def create_challenge(self, message):
 
@@ -532,6 +690,11 @@ class AntispamBot(Client):
             text = (
                 f'User "{full_name(new_member)}" does not meet our '
                 f'group standards. Bye !'
+            )
+        elif reason == Rejection.REACTION_DURING_SIGNUP:
+            text = (
+                f'User "{full_name(new_member)}" sent a reaction '
+                f'instead of answering the challenge. Bye !'
             )
         else:
             raise ValueError('Unknown rejection reason: {reason!r}')

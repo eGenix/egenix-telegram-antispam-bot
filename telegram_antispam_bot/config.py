@@ -106,6 +106,12 @@ CHALLENGES = _tools.StrFrozenSet(['Challenge'])
 # Max. number of failed challenge responses to allow
 MAX_FAILED_CHALLENGES = 3
 
+# Ban new members who send reactions during the signup dialog ?
+# If enabled, new members who react to messages while their signup
+# challenge is running will be immediately banned and the reaction
+# reported to Telegram. Enabled per default.
+BAN_ON_SIGNUP_REACTION = True
+
 ### Customization
 
 # Override default values with custom ones from a local module
