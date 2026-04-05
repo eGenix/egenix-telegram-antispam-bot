@@ -106,6 +106,12 @@ CHALLENGES = _tools.StrFrozenSet(['Challenge'])
 # Max. number of failed challenge responses to allow
 MAX_FAILED_CHALLENGES = 3
 
+# Restrict new members to only sending text messages while a signup
+# dialog is running. This prevents new members from using reactions,
+# stickers, etc. instead of answering the challenge. Requires the bot
+# to have the "Restrict Members" admin permission. Enabled per default.
+RESTRICT_SIGNUP_PERMISSIONS = True
+
 ### Customization
 
 # Override default values with custom ones from a local module

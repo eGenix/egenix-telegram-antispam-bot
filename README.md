@@ -128,6 +128,12 @@ installation:
 - `TG_MAX_EMOJIS_IN_USER_NAME`: Maximum number of emojis allowed
   in user names. Default is 2.
 
+- `TG_RESTRICT_SIGNUP_PERMISSIONS`: Set to `True` (default) to restrict
+  new members to only sending text messages while their signup dialog is
+  running. This prevents them from using reactions, stickers, media, etc.
+  instead of answering the challenge. Requires the bot to have the
+  *Restrict Members* admin permission. Set to `False` to disable.
+
 Getting the group IDs is not easy from the TG clients, but you can use
 the `TG_DEBUG` setting to find out the IDs. The log will show entries
 such as `chat=pyrogram.types.Chat(id=1234, type='supergroup',
@@ -155,8 +161,9 @@ python3 -m telegram_antispam_bot
 ## Adding the Bot to a TG Group
 
 In order for the bot to work on a group, you will have to add it as an
-admin to the group. It needs the permissions *Delete messages* and *Ban
-users*. The other permissions can be disabled.
+admin to the group. It needs the permissions *Delete messages*, *Ban
+users*, and *Restrict Members* (for the signup permission restriction
+feature). The other permissions can be disabled.
 
 ## Bot commands
 

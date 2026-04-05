@@ -16,7 +16,7 @@ import logging
 import datetime
 import enum
 from pyrogram import Client, handlers, errors
-from pyrogram.types import Message
+from pyrogram.types import Message, ChatPermissions
 import emoji
 
 from telegram_antispam_bot import challenge
@@ -43,6 +43,7 @@ from telegram_antispam_bot.config import (
     CHALLENGES,
     MAX_FAILED_CHALLENGES,
     MAX_EMOJIS_IN_USER_NAME,
+    RESTRICT_SIGNUP_PERMISSIONS,
     )
 
 ### Globals
@@ -172,6 +173,9 @@ class AntispamBot(Client):
 
     # Mute bot messages ?
     mute_bot_messages = MUTE_BOT_MESSAGES
+
+    # Restrict new members to text-only during signup ?
+    restrict_signup_permissions = RESTRICT_SIGNUP_PERMISSIONS
 
     ### Event loop
 
@@ -327,6 +331,9 @@ class AntispamBot(Client):
             signup_message.timer = 0
             signup_message.failed_challenges = 0
             self.new_members[new_member.id] = signup_message
+            if self.restrict_signup_permissions:
+                await self._restrict_new_member(
+                    message.chat.id, new_member.id)
             await self.send_challenge(signup_message)
 
     # Helpers
@@ -366,6 +373,45 @@ class AntispamBot(Client):
                 # Invalid access
                 return False
         return True
+
+    async def _restrict_new_member(self, chat_id, user_id):
+
+        """ Restrict a new member to only sending text messages.
+
+            This prevents the member from using reactions, stickers,
+            media, etc. during the signup dialog.
+        """
+        try:
+            await self.restrict_chat_member(
+                chat_id, user_id,
+                ChatPermissions(can_send_messages=True))
+            if _debug:
+                self.log(
+                    f'Restricted new member {user_id} in group {chat_id} '
+                    f'to text messages only')
+        except Exception as error:
+            self.log(
+                f'ERROR: Could not restrict new member {user_id} '
+                f'in group {chat_id}: {error}')
+
+    async def _unrestrict_member(self, chat_id, user_id):
+
+        """ Remove restrictions from a member by restoring the group's
+            default permissions.
+        """
+        try:
+            chat = await self.get_chat(chat_id)
+            await self.restrict_chat_member(
+                chat_id, user_id,
+                chat.permissions)
+            if _debug:
+                self.log(
+                    f'Removed restrictions for member {user_id} '
+                    f'in group {chat_id}')
+        except Exception as error:
+            self.log(
+                f'ERROR: Could not unrestrict member {user_id} '
+                f'in group {chat_id}: {error}')
 
     def create_challenge(self, message):
 
@@ -505,6 +551,8 @@ class AntispamBot(Client):
             pass
         await self.remove_conversation(message)
         self.new_members.pop(new_member.id)
+        if self.restrict_signup_permissions:
+            await self._unrestrict_member(chat_id, new_member.id)
         await self.log_admin(
             f'Accepted application by '
             f'{full_name(new_member, full_info=True)}'
